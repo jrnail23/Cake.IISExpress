@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Cake.IISExpress</id>
+    <version>0.0.0</version>
+    <authors>James Nail</authors>
+    <owners>James Nail</owners>
+    <description>IIS Express addon for Cake build.</description>
+    <summary>IIS Express addon for Cake build.</summary>
+    <licenseUrl>https://github.com/jrnail23/Cake.IISExpress/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/jrnail23/Cake.IISExpress</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/cake-build/graphics/master/png/cake-medium.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <copyright>Copyright (c) James Nail 2015</copyright>
+    <tags>Cake Script Build IISExpress</tags>
+    <dependencies>
+      <dependency id="Cake.Core" version="0.5.3-alpha-001" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Cake.IISExpress.dll" target="lib/net45" />
+    <file src="Cake.IISExpress.xml" target="lib/net45" />
+    <file src="LICENSE" />
+  </files>
+</package>
