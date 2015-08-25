@@ -25,6 +25,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Meta", "Meta", "{076800B8-8
 		..\ReleaseNotes.md = ..\ReleaseNotes.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{98E1A584-4B26-4C09-BB93-D1FE01A2A011}"
+	ProjectSection(SolutionItems) = preProject
+		Examples\Example.csx = Examples\Example.csx
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleWebApp", "Examples\ExampleWebApp\ExampleWebApp.csproj", "{B131C78F-0416-48EC-9DD2-DEFDC8D16643}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,11 +46,16 @@ Global
 		{2432368C-7ECF-4E6B-8089-AD68CF7FD0E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2432368C-7ECF-4E6B-8089-AD68CF7FD0E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2432368C-7ECF-4E6B-8089-AD68CF7FD0E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B131C78F-0416-48EC-9DD2-DEFDC8D16643}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B131C78F-0416-48EC-9DD2-DEFDC8D16643}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B131C78F-0416-48EC-9DD2-DEFDC8D16643}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B131C78F-0416-48EC-9DD2-DEFDC8D16643}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5A3672AD-D1FB-44C0-9251-F3C82F90A73A} = {3FC3D6E6-EC67-4DD2-BB11-010300D2B115}
+		{B131C78F-0416-48EC-9DD2-DEFDC8D16643} = {98E1A584-4B26-4C09-BB93-D1FE01A2A011}
 	EndGlobalSection
 EndGlobal

@@ -1,4 +1,5 @@
-﻿using Cake.Core;
+﻿using System;
+using Cake.Core;
 using Cake.Core.Annotations;
 using Cake.Core.IO;
 
@@ -21,6 +22,11 @@ namespace Cake.IISExpress
         public static IProcess IISExpress(this ICakeContext context,
             ConfigBasedIISExpressSettings settings)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+            if (settings == null)
+                throw new ArgumentNullException("settings");
+
             var runner = new ConfigBasedIISExpressRunner(context.FileSystem, context.Environment,
                 context.ProcessRunner, context.Globber, context.Registry);
 
@@ -37,6 +43,11 @@ namespace Cake.IISExpress
         public static IProcess IISExpress(this ICakeContext context,
             AppPathBasedIISExpressSettings settings)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+            if (settings == null)
+                throw new ArgumentNullException("settings");
+
             var runner = new AppPathBasedIISExpressRunner(context.FileSystem, context.Environment,
                 context.ProcessRunner, context.Globber, context.Registry);
 

@@ -14,7 +14,7 @@
     <copyright>Copyright (c) James Nail 2015</copyright>
     <tags>Cake Script Build IISExpress</tags>
     <dependencies>
-      <dependency id="Cake.Core" version="0.5.3-alpha-001" />
+      <dependency id="Cake.Core" version="0.5.3" />
     </dependencies>
   </metadata>
   <files>

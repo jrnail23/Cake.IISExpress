@@ -23,9 +23,12 @@
             var buildNumber = AppVeyor.Environment.Build.Number;
             var version = releaseNotes.Version.ToString();
 
-            semVersionSuffix = semVersionSuffix.StartsWith("-")
-                ? semVersionSuffix
-                : "-" + semVersionSuffix;
+            if (!string.IsNullOrEmpty(semVersionSuffix))
+            {
+                semVersionSuffix = semVersionSuffix.StartsWith("-")
+                    ? semVersionSuffix
+                    : "-" + semVersionSuffix;
+            }
 
             var semVersion = local
                 ? version + semVersionSuffix
@@ -95,7 +98,7 @@
                     MSBuild("./src/Cake.IISExpress.sln",
                         settings => settings.SetConfiguration(configuration)
                             .WithProperty("TreatWarningsAsErrors", "true")
-                            .UseToolVersion(MSBuildToolVersion.NET45)
+                            //.UseToolVersion(MSBuildToolVersion.Default)
                             .SetVerbosity(Verbosity.Minimal)
                             .SetNodeReuse(false));
                 });
@@ -160,6 +163,21 @@
                     AppVeyor.UploadArtifact(artifact);
                 });
 
+            Task("Publish-Local")
+                .WithCriteria(() => local)
+                .Does(() =>
+                {
+                    // Get the path to the package.
+                    var package = nugetRoot + File("Cake.IISExpress." + semVersion + ".nupkg");
+
+                    // Push the package.
+                    NuGetPush(package, new NuGetPushSettings
+                    {
+                        Source = @"\\localhost\NuGetCache",
+                        ApiKey = "xxx"
+                    });
+                });
+
             Task("Publish-MyGet")
                 .WithCriteria(() => !local)
                 .WithCriteria(() => !isPullRequest)
@@ -193,7 +211,7 @@
                 .IsDependentOn("Create-NuGet-Packages");
 
             Task("Default")
-                .IsDependentOn("Package");
+                .IsDependentOn("Package").IsDependentOn("Publish-Local");
 
             Task("AppVeyor")
                 .IsDependentOn("Update-AppVeyor-Build-Number")

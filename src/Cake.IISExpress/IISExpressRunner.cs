@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cake.Core;
+using Cake.Core.Diagnostics;
 using Cake.Core.IO;
 using Cake.Core.Utilities;
 
@@ -37,16 +39,22 @@ namespace Cake.IISExpress
         }
 
         /// <summary>
-        /// 
+        /// Gets the environment.
         /// </summary>
+        /// <value>
+        /// The environment.
+        /// </value>
         protected ICakeEnvironment Environment
         {
             get { return _cakeEnvironment; }
         }
 
         /// <summary>
-        /// 
+        /// Gets the file system.
         /// </summary>
+        /// <value>
+        /// The file system.
+        /// </value>
         protected IFileSystem FileSystem
         {
             get { return _fileSystem; }
@@ -62,11 +70,45 @@ namespace Cake.IISExpress
         }
 
         /// <summary>
-        /// Runs the process.
+        /// Builds arguments specific to the implemented execution strategy 
         /// </summary>
-        /// <param name="settings">The settings.</param>
+        /// <param name="settings"></param>
         /// <returns></returns>
-        public abstract IProcess RunProcess(TSettings settings);
+        protected abstract ProcessArgumentBuilder BuildArguments(TSettings settings);
+
+        /// <summary>
+        /// Runs the IIS Express process
+        /// </summary>
+        /// <param name="settings"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public virtual IProcess RunProcess(TSettings settings)
+        {
+            if (settings == null)
+                throw new ArgumentNullException("settings");
+
+            var arguments = BuildArguments(settings);
+
+            if (settings.TraceLevel != TraceLevel.None)
+            {
+                arguments.Append("/trace:" + settings.TraceLevel.ToString().ToLowerInvariant());
+            }
+
+            if (!settings.EnableSystemTray)
+            {
+                arguments.Append("/systray:false");
+            }
+
+            var processSettings = new ProcessSettings
+            {
+                Arguments = arguments,
+                EnableRaisingEvents = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+
+            return base.RunProcess(settings, arguments, null, processSettings);
+        }
 
         /// <summary>
         /// Gets the tool executable names.
@@ -84,10 +126,16 @@ namespace Cake.IISExpress
         /// <returns></returns>
         protected override IEnumerable<FilePath> GetAlternativeToolPaths(TSettings settings)
         {
-            yield return
-                DirectoryPath.FromString(
-                    _registry.LocalMachine.OpenKey(@"SOFTWARE\Microsoft\IISExpress\8.0")
-                        .GetValue("InstallPath").ToString()).CombineWithFilePath("iisexpress.exe");
+            var iisExpressRegistryKey = _registry.LocalMachine.OpenKey(@"SOFTWARE\Microsoft\IISExpress");
+            var latestVersion =
+                iisExpressRegistryKey.GetSubKeyNames().OrderByDescending(decimal.Parse).First();
+
+            var installPath = iisExpressRegistryKey.OpenKey(latestVersion).GetValue("InstallPath").ToString();
+
+            var toolPath =
+                DirectoryPath.FromString(installPath).CombineWithFilePath("iisexpress.exe");
+
+            yield return toolPath;
         }
     }
 }

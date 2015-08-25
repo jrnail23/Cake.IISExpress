@@ -1,15 +1,16 @@
+using System;
 using Cake.Core;
 using Cake.Core.IO;
 
 namespace Cake.IISExpress
 {
     /// <summary>
-    /// IIS Express runner, used when specifying the app path to run.
+    ///     IIS Express runner, used when specifying the app path to run.
     /// </summary>
     public class AppPathBasedIISExpressRunner : IISExpressRunner<AppPathBasedIISExpressSettings>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AppPathBasedIISExpressRunner"/> class.
+        ///     Initializes a new instance of the <see cref="AppPathBasedIISExpressRunner" /> class.
         /// </summary>
         /// <param name="fileSystem"></param>
         /// <param name="environment"></param>
@@ -23,13 +24,14 @@ namespace Cake.IISExpress
         }
 
         /// <summary>
-        /// Runs the process.
+        /// Builds arguments specific to the implemented execution strategy 
         /// </summary>
-        /// <param name="settings">The settings.</param>
+        /// <param name="settings"></param>
         /// <returns></returns>
-        /// <exception cref="Cake.Core.CakeException"></exception>
-        public override IProcess RunProcess(AppPathBasedIISExpressSettings settings)
+        protected override ProcessArgumentBuilder BuildArguments(AppPathBasedIISExpressSettings settings)
         {
+            if (settings == null)
+                throw new ArgumentNullException("settings");
 
             var appPath = settings.AppPath.IsRelative
                 ? settings.AppPath.MakeAbsolute(Environment)
@@ -37,13 +39,12 @@ namespace Cake.IISExpress
 
             if (!FileSystem.Exist(appPath))
             {
-                throw new CakeException(string.Format("AppPath '{0}' does not exist.",
-                    appPath));
+                throw new CakeException("AppPath '" + appPath + "' does not exist.");
             }
 
             var arguments = new ProcessArgumentBuilder();
 
-            arguments.Append(string.Format("/path:'{0}'", appPath));
+            arguments.Append("/path:'" + appPath + "'");
 
             // don't add switch for the default value
             if (settings.PortNumber != 8080)
@@ -57,18 +58,7 @@ namespace Cake.IISExpress
                 arguments.Append("/clr:v2.0");
             }
 
-            if (settings.TraceLevel != TraceLevel.None)
-            {
-                arguments.Append(string.Format("/trace:{0}",
-                    settings.TraceLevel.ToString().ToLowerInvariant()));
-            }
-
-            if (!settings.EnableSystemTray)
-            {
-                arguments.Append("/systray:false");
-            }
-
-            return base.RunProcess(settings, arguments);
+            return arguments;
         }
     }
 }

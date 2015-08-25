@@ -26,11 +26,16 @@ namespace Cake.IISExpress.Tests
         }
 
         [Theory, CustomAutoData]
-        public void AlternativeToolPathsShouldComeFromRegistry(IISExpressSettingsTestImpl dummySettings,
+        public void AlternativeToolPathsShouldComeFromRegistry(
+            IISExpressSettingsTestImpl dummySettings,
             [Frozen] IRegistry registry,
             IISExpressRunnerTestImpl sut)
         {
-            registry.LocalMachine.OpenKey(@"SOFTWARE\Microsoft\IISExpress\8.0")
+            registry.LocalMachine.OpenKey(@"SOFTWARE\Microsoft\IISExpress")
+                .GetSubKeyNames()
+                .Returns(new[] { "8.0", "10.0" });
+            registry.LocalMachine.OpenKey(@"SOFTWARE\Microsoft\IISExpress")
+                .OpenKey("10.0")
                 .GetValue("InstallPath")
                 .Returns("MyIISExpressInstallPath");
 
@@ -62,20 +67,21 @@ namespace Cake.IISExpress.Tests
                 return GetToolExecutableNames();
             }
 
-            public IEnumerable<FilePath> Access_GetAlternativeToolPaths(IISExpressSettingsTestImpl settings)
+            public IEnumerable<FilePath> Access_GetAlternativeToolPaths(
+                IISExpressSettingsTestImpl settings)
             {
                 return GetAlternativeToolPaths(settings);
             }
 
-            public override IProcess RunProcess(IISExpressSettingsTestImpl settings)
+            protected override ProcessArgumentBuilder BuildArguments(
+                IISExpressSettingsTestImpl settings)
             {
-                throw new System.NotImplementedException();
+                return new ProcessArgumentBuilder();
             }
         }
 
         public class IISExpressSettingsTestImpl : IISExpressSettings
         {
-             
         }
     }
 }

@@ -18,12 +18,16 @@ namespace Cake.IISExpress.Tests
 
             public string[] GetSubKeyNames()
             {
-                throw new NotImplementedException();
+                return new[] { "8.0", "10.0" };
             }
 
             public IRegistryKey OpenKey(string name)
             {
-                if (name == @"SOFTWARE\Microsoft\IISExpress\8.0")
+                if (name == @"SOFTWARE\Microsoft\IISExpress")
+                {
+                    return new FakeRegistryKey();
+                }
+                if (name == "10.0")
                 {
                     return new FakeRegistryKey();
                 }

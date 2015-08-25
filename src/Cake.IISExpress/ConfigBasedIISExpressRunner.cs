@@ -5,12 +5,11 @@ using Cake.Core.IO;
 namespace Cake.IISExpress
 {
     /// <summary>
-    /// 
     /// </summary>
     public class ConfigBasedIISExpressRunner : IISExpressRunner<ConfigBasedIISExpressSettings>
     {
         /// <summary>
-        /// 
+        ///     Initializes a new instance of the <see cref="ConfigBasedIISExpressRunner" /> class.
         /// </summary>
         /// <param name="fileSystem"></param>
         /// <param name="environment"></param>
@@ -24,26 +23,30 @@ namespace Cake.IISExpress
         }
 
         /// <summary>
-        /// 
+        ///     Builds arguments specific to the implemented execution strategy
         /// </summary>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public override IProcess RunProcess(ConfigBasedIISExpressSettings settings)
+        protected override ProcessArgumentBuilder BuildArguments(
+            ConfigBasedIISExpressSettings settings)
         {
+            if (settings == null)
+                throw new ArgumentNullException("settings");
+
             var arguments = new ProcessArgumentBuilder();
 
             var hasSiteNameToLaunch = !string.IsNullOrWhiteSpace(settings.SiteNameToLaunch);
 
             if (hasSiteNameToLaunch)
             {
-                arguments.Append(string.Format("/site:'{0}'", settings.SiteNameToLaunch));
+                arguments.Append("/site:'" + settings.SiteNameToLaunch + "'");
             }
 
             var hasSiteIdToLaunch = settings.SiteIdToLaunch.HasValue;
 
             if (hasSiteIdToLaunch)
             {
-                arguments.Append(string.Format("/siteid:{0}", settings.SiteIdToLaunch));
+                arguments.Append("/siteid:" + settings.SiteIdToLaunch);
             }
 
             if (hasSiteIdToLaunch && hasSiteNameToLaunch)
@@ -57,26 +60,15 @@ namespace Cake.IISExpress
                 if (!FileSystem.Exist(settings.ConfigFilePath))
                 {
                     throw new CakeException(
-                        string.Format("IIS Express configuration file '{0}' does not exist.",
-                            settings.ConfigFilePath));
+                        "IIS Express configuration file '" + settings.ConfigFilePath +
+                        "' does not exist.");
                 }
 
-                arguments.Append(string.Format("/config:'{0}'",
-                    settings.ConfigFilePath.MakeAbsolute(Environment)));
+                arguments.Append("/config:'" + settings.ConfigFilePath.MakeAbsolute(Environment) +
+                                 "'");
             }
 
-            if (settings.TraceLevel != TraceLevel.None)
-            {
-                arguments.Append(string.Format("/trace:{0}",
-                    settings.TraceLevel.ToString().ToLowerInvariant()));
-            }
-
-            if (!settings.EnableSystemTray)
-            {
-                arguments.Append("/systray:false");
-            }
-
-            return base.RunProcess(settings, arguments);
+            return arguments;
         }
     }
 }
