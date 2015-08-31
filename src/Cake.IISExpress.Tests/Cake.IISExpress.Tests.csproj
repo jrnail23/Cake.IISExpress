@@ -93,7 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Cake.IISExpress\Cake.IISExpress.csproj">
-      <Project>{9DC32D4C-C179-46F9-8ED6-D948F7CAC60E}</Project>
+      <Project>{9dc32d4c-c179-46f9-8ed6-d948f7cac60e}</Project>
       <Name>Cake.IISExpress</Name>
     </ProjectReference>
   </ItemGroup>

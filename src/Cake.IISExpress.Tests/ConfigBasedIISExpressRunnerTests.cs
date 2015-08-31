@@ -42,6 +42,19 @@ namespace Cake.IISExpress.Tests
                     Arg.Is<ProcessSettings>(p => p.Arguments.Render() == "/site:'My Web Site'"));
         }
 
+        [Theory, CustomAutoData(typeof(IISExpressRunnerCustomizations))]
+        public void ShouldSetAppPoolSwitch([Frozen] IProcessRunner runner,
+    ConfigBasedIISExpressRunner sut)
+        {
+            var settings = new ConfigBasedIISExpressSettings { AppPoolToLaunch = "MyAppPool" };
+
+            sut.RunProcess(settings);
+
+            runner.Received()
+                .Start(Arg.Any<FilePath>(),
+                    Arg.Is<ProcessSettings>(p => p.Arguments.Render() == "/apppool:MyAppPool"));
+        }
+
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
         public void ShouldSetSiteIdSwitch([Frozen] IProcessRunner runner,
             ConfigBasedIISExpressRunner sut)

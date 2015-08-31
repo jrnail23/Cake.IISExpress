@@ -68,6 +68,11 @@ namespace Cake.IISExpress
                                  "'");
             }
 
+            if (!string.IsNullOrEmpty(settings.AppPoolToLaunch))
+            {
+                arguments.Append("/apppool:" + settings.AppPoolToLaunch);
+            }
+
             return arguments;
         }
     }
