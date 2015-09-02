@@ -26,5 +26,14 @@
         ///     Default is None (no /trace argument will be used)
         /// </summary>
         public TraceLevel TraceLevel { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating how many milliseconds to wait for IIS Express to complete its startup before returning the process.
+        /// Default is 0 (no wait).
+        /// </summary>
+        /// <value>
+        /// Number of milliseconds to wait for server to start.
+        /// </value>
+        public int WaitForStartup { get; set; }
     }
 }

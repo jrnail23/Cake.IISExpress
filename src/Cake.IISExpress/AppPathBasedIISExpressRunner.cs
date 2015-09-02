@@ -1,5 +1,6 @@
 using System;
 using Cake.Core;
+using Cake.Core.Diagnostics;
 using Cake.Core.IO;
 
 namespace Cake.IISExpress
@@ -17,18 +18,20 @@ namespace Cake.IISExpress
         /// <param name="processRunner"></param>
         /// <param name="globber"></param>
         /// <param name="registry"></param>
+        /// <param name="log"></param>
         public AppPathBasedIISExpressRunner(IFileSystem fileSystem, ICakeEnvironment environment,
-            IProcessRunner processRunner, IGlobber globber, IRegistry registry)
-            : base(fileSystem, environment, processRunner, globber, registry)
+            IProcessRunner processRunner, IGlobber globber, IRegistry registry, ICakeLog log)
+            : base(fileSystem, environment, processRunner, globber, registry, log)
         {
         }
 
         /// <summary>
-        /// Builds arguments specific to the implemented execution strategy 
+        ///     Builds arguments specific to the implemented execution strategy
         /// </summary>
         /// <param name="settings"></param>
         /// <returns></returns>
-        protected override ProcessArgumentBuilder BuildArguments(AppPathBasedIISExpressSettings settings)
+        protected override ProcessArgumentBuilder BuildArguments(
+            AppPathBasedIISExpressSettings settings)
         {
             if (settings == null)
                 throw new ArgumentNullException("settings");
@@ -44,7 +47,7 @@ namespace Cake.IISExpress
 
             var arguments = new ProcessArgumentBuilder();
 
-            arguments.Append("/path:'" + appPath + "'");
+            arguments.Append("/path:\"" + appPath + "\"");
 
             // don't add switch for the default value
             if (settings.PortNumber != 8080)

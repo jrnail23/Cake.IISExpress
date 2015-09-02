@@ -28,7 +28,7 @@ namespace Cake.IISExpress
                 throw new ArgumentNullException("settings");
 
             var runner = new ConfigBasedIISExpressRunner(context.FileSystem, context.Environment,
-                context.ProcessRunner, context.Globber, context.Registry);
+                context.ProcessRunner, context.Globber, context.Registry, context.Log);
 
             return runner.RunProcess(settings);
         }
@@ -49,7 +49,7 @@ namespace Cake.IISExpress
                 throw new ArgumentNullException("settings");
 
             var runner = new AppPathBasedIISExpressRunner(context.FileSystem, context.Environment,
-                context.ProcessRunner, context.Globber, context.Registry);
+                context.ProcessRunner, context.Globber, context.Registry, context.Log);
 
             return runner.RunProcess(settings);
         }

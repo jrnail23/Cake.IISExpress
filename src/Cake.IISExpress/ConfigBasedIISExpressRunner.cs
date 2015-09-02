@@ -1,5 +1,6 @@
 using System;
 using Cake.Core;
+using Cake.Core.Diagnostics;
 using Cake.Core.IO;
 
 namespace Cake.IISExpress
@@ -9,16 +10,17 @@ namespace Cake.IISExpress
     public class ConfigBasedIISExpressRunner : IISExpressRunner<ConfigBasedIISExpressSettings>
     {
         /// <summary>
-        ///     Initializes a new instance of the <see cref="ConfigBasedIISExpressRunner" /> class.
+        /// Initializes a new instance of the <see cref="ConfigBasedIISExpressRunner" /> class.
         /// </summary>
         /// <param name="fileSystem"></param>
         /// <param name="environment"></param>
         /// <param name="processRunner"></param>
         /// <param name="globber"></param>
         /// <param name="registry"></param>
+        /// <param name="log"></param>
         public ConfigBasedIISExpressRunner(IFileSystem fileSystem, ICakeEnvironment environment,
-            IProcessRunner processRunner, IGlobber globber, IRegistry registry)
-            : base(fileSystem, environment, processRunner, globber, registry)
+            IProcessRunner processRunner, IGlobber globber, IRegistry registry, ICakeLog log)
+            : base(fileSystem, environment, processRunner, globber, registry, log)
         {
         }
 
@@ -39,7 +41,7 @@ namespace Cake.IISExpress
 
             if (hasSiteNameToLaunch)
             {
-                arguments.Append("/site:'" + settings.SiteNameToLaunch + "'");
+                arguments.Append("/site:\"" + settings.SiteNameToLaunch + "\"");
             }
 
             var hasSiteIdToLaunch = settings.SiteIdToLaunch.HasValue;
@@ -57,15 +59,16 @@ namespace Cake.IISExpress
 
             if (settings.ConfigFilePath != null)
             {
-                if (!FileSystem.Exist(settings.ConfigFilePath))
+                var absoluteConfigFilePath = settings.ConfigFilePath.MakeAbsolute(Environment);
+
+                if (!FileSystem.Exist(absoluteConfigFilePath))
                 {
                     throw new CakeException(
-                        "IIS Express configuration file '" + settings.ConfigFilePath +
+                        "IIS Express configuration file '" + absoluteConfigFilePath +
                         "' does not exist.");
                 }
 
-                arguments.Append("/config:'" + settings.ConfigFilePath.MakeAbsolute(Environment) +
-                                 "'");
+                arguments.Append("/config:\"" + absoluteConfigFilePath + "\"");
             }
 
             if (!string.IsNullOrEmpty(settings.AppPoolToLaunch))

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cake.IISExpress", "Cake.IISExpress\Cake.IISExpress.csproj", "{9DC32D4C-C179-46F9-8ED6-D948F7CAC60E}"
 EndProject
@@ -20,6 +20,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{5A3672
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Meta", "Meta", "{076800B8-8AB2-4F8B-8770-E544C310F8D6}"
 	ProjectSection(SolutionItems) = preProject
+		..\IISExpressTools.md = ..\IISExpressTools.md
 		..\LICENSE = ..\LICENSE
 		..\README.md = ..\README.md
 		..\ReleaseNotes.md = ..\ReleaseNotes.md
@@ -27,10 +28,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Meta", "Meta", "{076800B8-8
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{98E1A584-4B26-4C09-BB93-D1FE01A2A011}"
 	ProjectSection(SolutionItems) = preProject
-		Examples\Example.csx = Examples\Example.csx
+		Examples\applicationhost.custom.config = Examples\applicationhost.custom.config
+		Examples\build.ps1 = Examples\build.ps1
+		Examples\Example.cake = Examples\Example.cake
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleWebApp", "Examples\ExampleWebApp\ExampleWebApp.csproj", "{B131C78F-0416-48EC-9DD2-DEFDC8D16643}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{9A7142E5-E9C1-465C-9DC5-D89DB3B08D90}"
+	ProjectSection(SolutionItems) = preProject
+		Examples\tools\packages.config = Examples\tools\packages.config
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleWebApp.SubApp", "Examples\ExampleWebApp.SubApp\ExampleWebApp.SubApp.csproj", "{22393EE1-67FB-4E72-AD78-1EB7B732FB0E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,6 +60,10 @@ Global
 		{B131C78F-0416-48EC-9DD2-DEFDC8D16643}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B131C78F-0416-48EC-9DD2-DEFDC8D16643}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B131C78F-0416-48EC-9DD2-DEFDC8D16643}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22393EE1-67FB-4E72-AD78-1EB7B732FB0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22393EE1-67FB-4E72-AD78-1EB7B732FB0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22393EE1-67FB-4E72-AD78-1EB7B732FB0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22393EE1-67FB-4E72-AD78-1EB7B732FB0E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -57,5 +71,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{5A3672AD-D1FB-44C0-9251-F3C82F90A73A} = {3FC3D6E6-EC67-4DD2-BB11-010300D2B115}
 		{B131C78F-0416-48EC-9DD2-DEFDC8D16643} = {98E1A584-4B26-4C09-BB93-D1FE01A2A011}
+		{9A7142E5-E9C1-465C-9DC5-D89DB3B08D90} = {98E1A584-4B26-4C09-BB93-D1FE01A2A011}
+		{22393EE1-67FB-4E72-AD78-1EB7B732FB0E} = {98E1A584-4B26-4C09-BB93-D1FE01A2A011}
 	EndGlobalSection
 EndGlobal

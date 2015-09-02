@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Cake.Core;
+using Cake.Core.Diagnostics;
 using Cake.Core.IO;
 using FluentAssertions;
 using NSubstitute;
@@ -52,8 +53,8 @@ namespace Cake.IISExpress.Tests
         public class IISExpressRunnerTestImpl : IISExpressRunner<IISExpressSettingsTestImpl>
         {
             public IISExpressRunnerTestImpl(IFileSystem fileSystem, ICakeEnvironment environment,
-                IProcessRunner processRunner, IGlobber globber, IRegistry registry)
-                : base(fileSystem, environment, processRunner, globber, registry)
+                IProcessRunner processRunner, IGlobber globber, IRegistry registry, ICakeLog log)
+                : base(fileSystem, environment, processRunner, globber, registry, log)
             {
             }
 

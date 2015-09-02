@@ -1,5 +1,4 @@
-﻿using System;
-using Cake.Core;
+﻿using Cake.Core;
 using Cake.Core.IO;
 using Cake.Core.Utilities;
 using FluentAssertions;
@@ -49,7 +48,7 @@ namespace Cake.IISExpress.Tests
                     Arg.Is<ProcessSettings>(
                         p =>
                             p.Arguments.Render() ==
-                            "/path:'c:/MyApp'"));
+                            "/path:\"c:/MyApp\""));
         }
 
         [Theory, CustomAutoData(typeof(IISExpressRunnerCustomizations))]
@@ -71,7 +70,7 @@ namespace Cake.IISExpress.Tests
                     Arg.Is<ProcessSettings>(
                         p =>
                             p.Arguments.Render() ==
-                            "/path:'c:/build/MyApp'"));
+                            "/path:\"c:/build/MyApp\""));
         }
 
         [Theory, CustomAutoData(typeof(IISExpressRunnerCustomizations))]
@@ -84,7 +83,7 @@ namespace Cake.IISExpress.Tests
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
-                    Arg.Is<ProcessSettings>(p => p.Arguments.Render() == "/path:'c:/MyApp' /systray:false"));
+                    Arg.Is<ProcessSettings>(p => p.Arguments.Render() == "/path:\"c:/MyApp\" /systray:false"));
         }
 
         [Theory, CustomAutoData(typeof(IISExpressRunnerCustomizations))]
@@ -98,7 +97,7 @@ namespace Cake.IISExpress.Tests
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
-                    Arg.Is<ProcessSettings>(p => p.Arguments.Render() == "/path:'c:/MyApp' /trace:warning"));
+                    Arg.Is<ProcessSettings>(p => p.Arguments.Render() == "/path:\"c:/MyApp\" /trace:warning"));
         }
 
         [Theory, CustomAutoData(typeof(IISExpressRunnerCustomizations))]
@@ -113,7 +112,7 @@ namespace Cake.IISExpress.Tests
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
                     Arg.Is<ProcessSettings>(
-                        p => p.Arguments.Render() == "/path:'c:/MyApp' /port:5555"));
+                        p => p.Arguments.Render() == "/path:\"c:/MyApp\" /port:5555"));
         }
 
         [Theory, CustomAutoData(typeof(IISExpressRunnerCustomizations))]
@@ -128,7 +127,30 @@ namespace Cake.IISExpress.Tests
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
                     Arg.Is<ProcessSettings>(
-                        p => p.Arguments.Render() == "/path:'c:/MyApp' /clr:v2.0"));
+                        p => p.Arguments.Render() == "/path:\"c:/MyApp\" /clr:v2.0"));
+        }
+
+        [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
+        public void ShouldThrowWhenIISExpressProcessWritesToErrorStream([Frozen] IProcess process,
+            IFileSystem fileSystem,
+            [Frozen] IProcessRunner processRunner, [Frozen] IRegistry registry,
+            AppPathBasedIISExpressRunner sut)
+        {
+            processRunner.Start(Arg.Any<FilePath>(), Arg.Any<ProcessSettings>()).Returns(process);
+
+            var settings = new AppPathBasedIISExpressSettings(@"c:\MyApp");
+            fileSystem.Exist(settings.AppPath).Returns(true);
+
+            sut.RunProcess(settings);
+
+            process.Invoking(
+                p =>
+                    p.ErrorDataReceived +=
+                        Raise.EventWith(
+                            new ProcessDataReceivedEventArgs("some dummy error data received")))
+                .ShouldThrow<CakeException>()
+                .WithMessage(
+                    "IIS Express returned the following error message: 'some dummy error data received'");
         }
     }
 }

@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 using Cake.Core;
+using Cake.Core.Diagnostics;
 using Cake.Core.IO;
 using Cake.Core.Utilities;
 using FluentAssertions;
@@ -39,7 +42,7 @@ namespace Cake.IISExpress.Tests
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
-                    Arg.Is<ProcessSettings>(p => p.Arguments.Render() == "/site:'My Web Site'"));
+                    Arg.Is<ProcessSettings>(p => p.Arguments.Render() == "/site:\"My Web Site\""));
         }
 
         [Theory, CustomAutoData(typeof(IISExpressRunnerCustomizations))]
@@ -96,7 +99,7 @@ namespace Cake.IISExpress.Tests
             fileSystem.Exist(
                 Arg.Is<FilePath>(
                     f =>
-                        f.FullPath.Equals(settings.ConfigFilePath.FullPath,
+                        f.FullPath.Equals("c:/MyWorkingDirectory/applicationhost.config",
                             StringComparison.OrdinalIgnoreCase))).Returns(true);
 
             sut.RunProcess(settings);
@@ -106,7 +109,7 @@ namespace Cake.IISExpress.Tests
                     Arg.Is<ProcessSettings>(
                         p =>
                             p.Arguments.Render() ==
-                            "/config:'c:/MyWorkingDirectory/applicationhost.config'"));
+                            "/config:\"c:/MyWorkingDirectory/applicationhost.config\""));
         }
 
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
@@ -135,7 +138,7 @@ namespace Cake.IISExpress.Tests
                     Arg.Is<ProcessSettings>(
                         p =>
                             p.Arguments.Render() ==
-                            "/config:'c:/someOtherDirectory/applicationhost.config'"));
+                            "/config:\"c:/someOtherDirectory/applicationhost.config\""));
         }
 
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
@@ -186,6 +189,68 @@ namespace Cake.IISExpress.Tests
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
                     Arg.Is<ProcessSettings>(p => p.Arguments.Render() == "/trace:warning"));
+        }
+
+        [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
+        public void ShouldThrowWhenIISExpressProcessWritesToErrorStream([Frozen] IProcess process,
+            [Frozen] IProcessRunner processRunner, [Frozen] IRegistry registry,
+            ConfigBasedIISExpressRunner sut)
+        {
+            processRunner.Start(Arg.Any<FilePath>(), Arg.Any<ProcessSettings>()).Returns(process);
+
+            var settings = new ConfigBasedIISExpressSettings();
+
+            sut.RunProcess(settings);
+
+            process.Invoking(
+                p =>
+                    p.ErrorDataReceived +=
+                        Raise.EventWith(
+                            new ProcessDataReceivedEventArgs("some dummy error data received")))
+                .ShouldThrow<CakeException>()
+                .WithMessage(
+                    "IIS Express returned the following error message: 'some dummy error data received'");
+        }
+
+        [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
+        public void ShouldWaitUntilIISExpressServerIsStarted([Frozen]ICakeLog log, [Frozen] IProcess process,
+            [Frozen] IProcessRunner processRunner, [Frozen] IRegistry registry,
+            ConfigBasedIISExpressRunner sut)
+        {
+            var simulatedStandardOutput = new[]
+            { "1", "2", "3", "4", "IIS Express is running.", "5" };
+
+            // hooking into the logging call that occurs previous to waiting is the only place I could 
+            // think of to send in simulated output to signal IIS Express has started.
+            log.When(
+                l =>
+                    l.Write(Arg.Any<Verbosity>(), Arg.Any<LogLevel>(),
+                        "Waiting for IIS Express to start (timeout: {0}ms)", Arg.Any<object[]>()))
+                .Do(ci =>
+                {
+                    foreach (var s in simulatedStandardOutput)
+                    {
+                        Console.WriteLine("sending simulated input: {0}", s);
+                        process.OutputDataReceived +=
+                            Raise.EventWith(new ProcessDataReceivedEventArgs(s));
+                    }
+                });
+
+            processRunner.Start(Arg.Any<FilePath>(), Arg.Any<ProcessSettings>())
+                .Returns(ci => process);
+
+            var settings = new ConfigBasedIISExpressSettings { WaitForStartup = 1000 };
+
+            sut.RunProcess(settings);
+        }
+
+        private IEnumerable<string> SimulateStandardOutput(params string[] outputStrings)
+        {
+            foreach (var outputString in outputStrings)
+            {
+                Thread.Sleep(10);
+                yield return outputString;
+            }
         }
     }
 }
