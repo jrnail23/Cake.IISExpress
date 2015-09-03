@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cake.Core;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
@@ -48,6 +49,20 @@ namespace Cake.IISExpress.Tests
                     r =>
                         r.FullPath.Equals(@"MyIISExpressInstallPath/IISExpress.exe",
                             StringComparison.OrdinalIgnoreCase));
+        }
+
+        [Theory, CustomAutoData]
+        public void AlternativeToolPathsThrowsWhenRegistryItemDoesNotExist(
+            IISExpressSettingsTestImpl dummySettings,
+            [Frozen] IRegistry registry,
+            IISExpressRunnerTestImpl sut)
+        {
+            registry.LocalMachine.OpenKey(@"SOFTWARE\Microsoft\IISExpress")
+                .Returns(null as IRegistryKey);
+
+            sut.Invoking(_ => _.Access_GetAlternativeToolPaths(dummySettings).ToArray())
+                .ShouldThrow<CakeException>()
+                .WithMessage("IIS Express is not installed on this machine.");
         }
 
         public class IISExpressRunnerTestImpl : IISExpressRunner<IISExpressSettingsTestImpl>

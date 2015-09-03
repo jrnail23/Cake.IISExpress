@@ -188,6 +188,12 @@ namespace Cake.IISExpress
         {
             var iisExpressRegistryKey =
                 _registry.LocalMachine.OpenKey(@"SOFTWARE\Microsoft\IISExpress");
+
+            if (iisExpressRegistryKey == null)
+            {
+                throw new CakeException("IIS Express is not installed on this machine.");
+            }
+
             var latestVersion =
                 iisExpressRegistryKey.GetSubKeyNames().OrderByDescending(decimal.Parse).First();
 
