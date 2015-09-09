@@ -80,6 +80,7 @@
     <Compile Include="CustomAutoDataAttribute.cs" />
     <Compile Include="AppPathBasedIISExpressSettingsTests.cs" />
     <Compile Include="FakeIISExpressRegistry.cs" />
+    <Compile Include="FakeProcess.cs" />
     <Compile Include="IISExpressRunnerCustomizations.cs" />
     <Compile Include="IISExpressRunnerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

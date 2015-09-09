@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading;
 using Cake.Core;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
@@ -192,7 +190,7 @@ namespace Cake.IISExpress.Tests
         }
 
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
-        public void ShouldThrowWhenIISExpressProcessWritesToErrorStream([Frozen] IProcess process,
+        public void ShouldThrowWhenIISExpressProcessWritesToErrorStream([Frozen(As = typeof(IProcess))] FakeProcess process,
             [Frozen] IProcessRunner processRunner, [Frozen] IRegistry registry,
             ConfigBasedIISExpressRunner sut)
         {
@@ -204,16 +202,14 @@ namespace Cake.IISExpress.Tests
 
             process.Invoking(
                 p =>
-                    p.ErrorDataReceived +=
-                        Raise.EventWith(
-                            new ProcessDataReceivedEventArgs("some dummy error data received")))
+                    p.TriggerErrorOutput("some dummy error data received"))
                 .ShouldThrow<CakeException>()
                 .WithMessage(
                     "IIS Express returned the following error message: 'some dummy error data received'");
         }
 
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
-        public void ShouldWaitUntilIISExpressServerIsStarted([Frozen]ICakeLog log, [Frozen] IProcess process,
+        public void ShouldWaitUntilIISExpressServerIsStarted([Frozen]ICakeLog log, [Frozen(As = typeof(IProcess))] FakeProcess process,
             [Frozen] IProcessRunner processRunner, [Frozen] IRegistry registry,
             ConfigBasedIISExpressRunner sut)
         {
@@ -230,9 +226,7 @@ namespace Cake.IISExpress.Tests
                 {
                     foreach (var s in simulatedStandardOutput)
                     {
-                        Console.WriteLine("sending simulated input: {0}", s);
-                        process.OutputDataReceived +=
-                            Raise.EventWith(new ProcessDataReceivedEventArgs(s));
+                        process.TriggerStandardOutput(s);
                     }
                 });
 
@@ -242,15 +236,43 @@ namespace Cake.IISExpress.Tests
             var settings = new ConfigBasedIISExpressSettings { WaitForStartup = 1000 };
 
             sut.RunProcess(settings);
+
+            log.Received()
+                .Write(Verbosity.Normal, LogLevel.Information,
+                    Arg.Is<string>(s => s.StartsWith("IIS Express is running")), Arg.Any<object[]>());
         }
 
-        private IEnumerable<string> SimulateStandardOutput(params string[] outputStrings)
+        [Theory, CustomAutoData(typeof(IISExpressRunnerCustomizations))]
+        public void ShouldTimeoutWhenIISExpressTakesLongerThanSpecifiedWaitTimeToStart([Frozen]ICakeLog log, [Frozen(As = typeof(IProcess))] FakeProcess process,
+    [Frozen] IProcessRunner processRunner, [Frozen] IRegistry registry,
+    ConfigBasedIISExpressRunner sut)
         {
-            foreach (var outputString in outputStrings)
-            {
-                Thread.Sleep(10);
-                yield return outputString;
-            }
+            var simulatedStandardOutput = new[]
+            { "1", "2", "3", "4", "IIS Express is running.", "5" };
+
+            // hooking into the logging call that occurs previous to waiting is the only place I could 
+            // think of to send in simulated output to signal IIS Express has started.
+            log.When(
+                l =>
+                    l.Write(Arg.Any<Verbosity>(), Arg.Any<LogLevel>(),
+                        "Waiting for IIS Express to start (timeout: {0}ms)", Arg.Any<object[]>()))
+                .Do(ci =>
+                {
+                    System.Threading.Thread.Sleep(100);
+                    foreach (var s in simulatedStandardOutput)
+                    {
+                        process.TriggerStandardOutput(s);
+                    }
+                });
+
+            processRunner.Start(Arg.Any<FilePath>(), Arg.Any<ProcessSettings>())
+                .Returns(ci => process);
+
+            var settings = new ConfigBasedIISExpressSettings { WaitForStartup = 50 };
+
+            sut.Invoking(s => s.RunProcess(settings))
+                .ShouldThrow<CakeException>()
+                .WithMessage("Timed out while waiting for IIS Express to start. (timeout: 50ms)");
         }
     }
 }

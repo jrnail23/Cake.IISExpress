@@ -1,4 +1,6 @@
-﻿using Cake.Core;
+﻿using System;
+using Cake.Core;
+using Cake.Core.Diagnostics;
 using Cake.Core.IO;
 using Cake.Core.Utilities;
 using FluentAssertions;
@@ -131,7 +133,7 @@ namespace Cake.IISExpress.Tests
         }
 
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
-        public void ShouldThrowWhenIISExpressProcessWritesToErrorStream([Frozen] IProcess process,
+        public void ShouldThrowWhenIISExpressProcessWritesToErrorStream([Frozen(As=typeof(IProcess))] FakeProcess process,
             IFileSystem fileSystem,
             [Frozen] IProcessRunner processRunner, [Frozen] IRegistry registry,
             AppPathBasedIISExpressRunner sut)
@@ -145,12 +147,47 @@ namespace Cake.IISExpress.Tests
 
             process.Invoking(
                 p =>
-                    p.ErrorDataReceived +=
-                        Raise.EventWith(
-                            new ProcessDataReceivedEventArgs("some dummy error data received")))
+                    p.TriggerErrorOutput("some dummy error data received"))
                 .ShouldThrow<CakeException>()
                 .WithMessage(
                     "IIS Express returned the following error message: 'some dummy error data received'");
+        }
+
+        [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
+        public void ShouldWaitUntilIISExpressServerIsStarted([Frozen] ICakeLog log,
+            [Frozen(As = typeof (IProcess))] FakeProcess process, IFileSystem fileSystem,
+            [Frozen] IProcessRunner processRunner, [Frozen] IRegistry registry,
+            AppPathBasedIISExpressRunner sut)
+        {
+            var simulatedStandardOutput = new[]
+            {"1", "2", "3", "4", "IIS Express is running.", "5"};
+
+            // hooking into the logging call that occurs previous to waiting is the only place I could 
+            // think of to send in simulated output to signal IIS Express has started.
+            log.When(
+                l =>
+                    l.Write(Arg.Any<Verbosity>(), Arg.Any<LogLevel>(),
+                        "Waiting for IIS Express to start (timeout: {0}ms)", Arg.Any<object[]>()))
+                .Do(ci =>
+                {
+                    foreach (var s in simulatedStandardOutput)
+                    {
+                        Console.WriteLine("sending simulated input: {0}", s);
+                        process.TriggerStandardOutput(s);
+                    }
+                });
+
+            processRunner.Start(Arg.Any<FilePath>(), Arg.Any<ProcessSettings>())
+                .Returns(ci => process);
+
+            var settings = new AppPathBasedIISExpressSettings(@"c:\MyApp") {WaitForStartup = 1000};
+            fileSystem.Exist(settings.AppPath).Returns(true);
+
+            sut.RunProcess(settings);
+
+            log.Received()
+                .Write(Verbosity.Normal, LogLevel.Information,
+                    Arg.Is<string>(s => s.StartsWith("IIS Express is running")), Arg.Any<object[]>());
         }
     }
 }

@@ -124,30 +124,31 @@ namespace Cake.IISExpress
 
             var process = base.RunProcess(settings, arguments, null, processSettings);
 
-            process.ErrorDataReceived += (sender, args) =>
+
+            process.HandleErrorOutput( args =>
             {
                 var errorMessage =
                     string.Format("IIS Express returned the following error message: '{0}'",
-                        args.Data);
+                        args.Output);
                 throw new CakeException(errorMessage);
-            };
+            });
 
             if (settings.WaitForStartup > 0)
             {
                 // this supports a timeout on waiting for startup
                 var stopwatch = Stopwatch.StartNew();
                 var serverIsStarted = false;
-                
-                process.OutputDataReceived += (sender, args) =>
+
+                process.HandleStandardOutput(args =>
                 {
                     if (!serverIsStarted &&
-                        "IIS Express is running.".Equals(args.Data,
+                        "IIS Express is running.".Equals(args.Output,
                             StringComparison.InvariantCultureIgnoreCase))
                     {
                         stopwatch.Stop();
                         serverIsStarted = true;
                     }
-                };
+                });
 
                 Log.Verbose("Waiting for IIS Express to start (timeout: {0}ms)",
                     settings.WaitForStartup);
