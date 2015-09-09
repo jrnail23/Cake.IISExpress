@@ -24,7 +24,7 @@ namespace Cake.IISExpress.Tests
         {
             var settings = new ConfigBasedIISExpressSettings();
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(), Arg.Is<ProcessSettings>(p => p.Arguments.Render() == ""));
@@ -36,7 +36,7 @@ namespace Cake.IISExpress.Tests
         {
             var settings = new ConfigBasedIISExpressSettings { SiteNameToLaunch = "My Web Site" };
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
@@ -49,7 +49,7 @@ namespace Cake.IISExpress.Tests
         {
             var settings = new ConfigBasedIISExpressSettings { AppPoolToLaunch = "MyAppPool" };
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
@@ -62,7 +62,7 @@ namespace Cake.IISExpress.Tests
         {
             var settings = new ConfigBasedIISExpressSettings { SiteIdToLaunch = 53 };
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
@@ -79,7 +79,7 @@ namespace Cake.IISExpress.Tests
                 SiteNameToLaunch = "MySite"
             };
 
-            sut.Invoking(s => s.RunProcess(settings)).ShouldThrow<InvalidOperationException>();
+            sut.Invoking(s => s.StartServer(settings)).ShouldThrow<InvalidOperationException>();
         }
 
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
@@ -100,7 +100,7 @@ namespace Cake.IISExpress.Tests
                         f.FullPath.Equals("c:/MyWorkingDirectory/applicationhost.config",
                             StringComparison.OrdinalIgnoreCase))).Returns(true);
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
@@ -129,7 +129,7 @@ namespace Cake.IISExpress.Tests
                         f.FullPath.Equals(settings.ConfigFilePath.FullPath,
                             StringComparison.OrdinalIgnoreCase))).Returns(true);
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
@@ -158,7 +158,7 @@ namespace Cake.IISExpress.Tests
                         f.FullPath.Equals(settings.ConfigFilePath.FullPath,
                             StringComparison.OrdinalIgnoreCase))).Returns(false);
 
-            sut.Invoking(s => s.RunProcess(settings)).ShouldThrow<CakeException>();
+            sut.Invoking(s => s.StartServer(settings)).ShouldThrow<CakeException>();
 
             runner.DidNotReceiveWithAnyArgs().Start(null, null);
         }
@@ -169,7 +169,7 @@ namespace Cake.IISExpress.Tests
         {
             var settings = new ConfigBasedIISExpressSettings { EnableSystemTray = false };
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
@@ -182,7 +182,7 @@ namespace Cake.IISExpress.Tests
         {
             var settings = new ConfigBasedIISExpressSettings { TraceLevel = TraceLevel.Warning };
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
@@ -198,7 +198,7 @@ namespace Cake.IISExpress.Tests
 
             var settings = new ConfigBasedIISExpressSettings();
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             process.Invoking(
                 p =>
@@ -235,7 +235,7 @@ namespace Cake.IISExpress.Tests
 
             var settings = new ConfigBasedIISExpressSettings { WaitForStartup = 1000 };
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             log.Received()
                 .Write(Verbosity.Normal, LogLevel.Information,
@@ -270,7 +270,7 @@ namespace Cake.IISExpress.Tests
 
             var settings = new ConfigBasedIISExpressSettings { WaitForStartup = 50 };
 
-            sut.Invoking(s => s.RunProcess(settings))
+            sut.Invoking(s => s.StartServer(settings))
                 .ShouldThrow<CakeException>()
                 .WithMessage("Timed out while waiting for IIS Express to start. (timeout: 50ms)");
         }

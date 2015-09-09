@@ -27,7 +27,7 @@ namespace Cake.IISExpress.Tests
 
             fileSystem.Exist(settings.AppPath).Returns(false);
 
-            sut.Invoking(s => s.RunProcess(settings)).ShouldThrow<CakeException>();
+            sut.Invoking(s => s.StartServer(settings)).ShouldThrow<CakeException>();
 
             runner.DidNotReceiveWithAnyArgs()
                 .Start(null, null);
@@ -43,7 +43,7 @@ namespace Cake.IISExpress.Tests
             
             fileSystem.Exist(Arg.Is(settings.AppPath)).Returns(true);
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
@@ -65,7 +65,7 @@ namespace Cake.IISExpress.Tests
 
             fileSystem.Exist(Arg.Is<DirectoryPath>(x => x.FullPath == "c:/build/MyApp")).Returns(true);
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
@@ -81,7 +81,7 @@ namespace Cake.IISExpress.Tests
         {
             var settings = new AppPathBasedIISExpressSettings(@"c:\MyApp") { EnableSystemTray = false };
             fileSystem.Exist(settings.AppPath).Returns(true);
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
@@ -95,7 +95,7 @@ namespace Cake.IISExpress.Tests
             var settings = new AppPathBasedIISExpressSettings(@"c:\MyApp") { TraceLevel = TraceLevel.Warning };
             fileSystem.Exist(settings.AppPath).Returns(true);
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
@@ -109,7 +109,7 @@ namespace Cake.IISExpress.Tests
             var settings = new AppPathBasedIISExpressSettings(@"c:\MyApp") { PortNumber = 5555 };
             fileSystem.Exist(settings.AppPath).Returns(true);
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
@@ -124,7 +124,7 @@ namespace Cake.IISExpress.Tests
             var settings = new AppPathBasedIISExpressSettings(@"c:\MyApp") { ClrVersion = ClrVersion.Version20 };
             fileSystem.Exist(settings.AppPath).Returns(true);
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
@@ -143,7 +143,7 @@ namespace Cake.IISExpress.Tests
             var settings = new AppPathBasedIISExpressSettings(@"c:\MyApp");
             fileSystem.Exist(settings.AppPath).Returns(true);
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             process.Invoking(
                 p =>
@@ -183,7 +183,7 @@ namespace Cake.IISExpress.Tests
             var settings = new AppPathBasedIISExpressSettings(@"c:\MyApp") {WaitForStartup = 1000};
             fileSystem.Exist(settings.AppPath).Returns(true);
 
-            sut.RunProcess(settings);
+            sut.StartServer(settings);
 
             log.Received()
                 .Write(Verbosity.Normal, LogLevel.Information,

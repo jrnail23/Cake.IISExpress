@@ -19,7 +19,7 @@ namespace Cake.IISExpress
         /// <param name="settings"></param>
         /// <returns></returns>
         [CakeMethodAlias]
-        public static IProcess IISExpress(this ICakeContext context,
+        public static IProcess StartIISExpress(this ICakeContext context,
             ConfigBasedIISExpressSettings settings)
         {
             if (context == null)
@@ -30,7 +30,7 @@ namespace Cake.IISExpress
             var runner = new ConfigBasedIISExpressRunner(context.FileSystem, context.Environment,
                 context.ProcessRunner, context.Globber, context.Registry, context.Log);
 
-            return runner.RunProcess(settings);
+            return runner.StartServer(settings);
         }
         
         /// <summary>
@@ -40,7 +40,7 @@ namespace Cake.IISExpress
         /// <param name="settings"></param>
         /// <returns></returns>
         [CakeMethodAlias]
-        public static IProcess IISExpress(this ICakeContext context,
+        public static IProcess StartIISExpress(this ICakeContext context,
             AppPathBasedIISExpressSettings settings)
         {
             if (context == null)
@@ -51,7 +51,7 @@ namespace Cake.IISExpress
             var runner = new AppPathBasedIISExpressRunner(context.FileSystem, context.Environment,
                 context.ProcessRunner, context.Globber, context.Registry, context.Log);
 
-            return runner.RunProcess(settings);
+            return runner.StartServer(settings);
         }
     }
 }

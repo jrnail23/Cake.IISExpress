@@ -24,7 +24,7 @@ namespace Cake.IISExpress
         private readonly IRegistry _registry;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IISExpressRunner{TSettings}"/> class.
+        ///     Initializes a new instance of the <see cref="IISExpressRunner{TSettings}" /> class.
         /// </summary>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="environment">The environment.</param>
@@ -98,7 +98,7 @@ namespace Cake.IISExpress
         /// <param name="settings"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public virtual IProcess RunProcess(TSettings settings)
+        public virtual IProcess StartServer(TSettings settings)
         {
             if (settings == null)
                 throw new ArgumentNullException("settings");
@@ -122,10 +122,10 @@ namespace Cake.IISExpress
                 RedirectStandardError = true
             };
 
-            var process = base.RunProcess(settings, arguments, null, processSettings);
+            var process = RunProcess(settings, arguments, null, processSettings);
 
 
-            process.HandleErrorOutput( args =>
+            process.HandleErrorOutput(args =>
             {
                 var errorMessage =
                     string.Format("IIS Express returned the following error message: '{0}'",
@@ -154,14 +154,13 @@ namespace Cake.IISExpress
                     settings.WaitForStartup);
                 do
                 {
-
                     if (stopwatch.ElapsedMilliseconds > settings.WaitForStartup)
                     {
                         throw new CakeException(string.Format(CultureInfo.CurrentCulture,
                             "Timed out while waiting for IIS Express to start. (timeout: {0}ms)",
                             settings.WaitForStartup));
                     }
-                    
+
                     Thread.Sleep(10);
                 } while (!serverIsStarted);
 
