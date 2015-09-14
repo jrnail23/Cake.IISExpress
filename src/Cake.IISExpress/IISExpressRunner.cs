@@ -8,6 +8,7 @@ using Cake.Core;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
 using Cake.Core.Utilities;
+using Cake.Process;
 
 namespace Cake.IISExpress
 {
@@ -21,10 +22,11 @@ namespace Cake.IISExpress
         private readonly ICakeEnvironment _cakeEnvironment;
         private readonly IFileSystem _fileSystem;
         private readonly ICakeLog _log;
+        private readonly IAdvProcessRunner _advProcessRunner;
         private readonly IRegistry _registry;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="IISExpressRunner{TSettings}" /> class.
+        /// Initializes a new instance of the <see cref="IISExpressRunner{TSettings}" /> class.
         /// </summary>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="environment">The environment.</param>
@@ -32,13 +34,15 @@ namespace Cake.IISExpress
         /// <param name="globber">The globber.</param>
         /// <param name="registry">The registry.</param>
         /// <param name="log">The log.</param>
+        /// <param name="advProcessRunner">The adv process runner.</param>
         protected IISExpressRunner(IFileSystem fileSystem, ICakeEnvironment environment,
             IProcessRunner processRunner,
-            IGlobber globber, IRegistry registry, ICakeLog log)
+            IGlobber globber, IRegistry registry, ICakeLog log, IAdvProcessRunner advProcessRunner)
             : base(fileSystem, environment, processRunner, globber)
         {
             _registry = registry;
             _log = log;
+            _advProcessRunner = advProcessRunner;
             _cakeEnvironment = environment;
             _fileSystem = fileSystem;
         }
@@ -98,7 +102,7 @@ namespace Cake.IISExpress
         /// <param name="settings"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public virtual IProcess StartServer(TSettings settings)
+        public virtual IAdvProcess StartServer(TSettings settings)
         {
             if (settings == null)
                 throw new ArgumentNullException("settings");
@@ -115,17 +119,17 @@ namespace Cake.IISExpress
                 arguments.Append("/systray:false");
             }
 
-            var processSettings = new ProcessSettings
+            var processSettings = new AdvProcessSettings
             {
                 Arguments = arguments,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
 
-            var process = RunProcess(settings, arguments, null, processSettings);
+            var process = StartProcess(settings, arguments, null, processSettings);
 
 
-            process.HandleErrorOutput(args =>
+            process.ErrorDataReceived += ((sender, args) =>
             {
                 var errorMessage =
                     string.Format("IIS Express returned the following error message: '{0}'",
@@ -139,7 +143,7 @@ namespace Cake.IISExpress
                 var stopwatch = Stopwatch.StartNew();
                 var serverIsStarted = false;
 
-                process.HandleStandardOutput(args =>
+                process.OutputDataReceived += ((sender, args) =>
                 {
                     if (!serverIsStarted &&
                         "IIS Express is running.".Equals(args.Output,
@@ -167,6 +171,65 @@ namespace Cake.IISExpress
                 Log.Information("IIS Express is running -- it took ~{0}ms to start.", stopwatch.ElapsedMilliseconds);
             }
 
+            return process;
+        }
+
+        /// <summary>
+        /// Starts the process.
+        /// </summary>
+        /// <param name="settings">The settings.</param>
+        /// <param name="arguments">The arguments.</param>
+        /// <param name="toolPath">The tool path.</param>
+        /// <param name="processSettings">The process settings.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">arguments</exception>
+        /// <exception cref="Cake.Core.CakeException">
+        /// </exception>
+        protected IAdvProcess StartProcess(TSettings settings, ProcessArgumentBuilder arguments, FilePath toolPath,
+            AdvProcessSettings processSettings)
+        {
+            if (arguments == null && (processSettings == null || processSettings.Arguments == null))
+            {
+                throw new ArgumentNullException("arguments");
+            }
+
+            // Get the tool name.
+            var toolName = GetToolName();
+
+            // Get the tool path.
+            toolPath = GetToolPath(settings, toolPath);
+            if (toolPath == null || !_fileSystem.Exist(toolPath))
+            {
+                const string message = "{0}: Could not locate executable.";
+                throw new CakeException(string.Format(CultureInfo.InvariantCulture, message, toolName));
+            }
+
+            // Get the working directory.
+            var workingDirectory = GetWorkingDirectory(settings);
+            if (workingDirectory == null)
+            {
+                const string message = "{0}: Could not resolve working directory.";
+                throw new CakeException(string.Format(CultureInfo.InvariantCulture, message, toolName));
+            }
+
+            // Create the process start info.
+            var info = processSettings ?? new AdvProcessSettings();
+            if (info.Arguments == null)
+            {
+                info.Arguments = arguments;
+            }
+            if (info.WorkingDirectory == null)
+            {
+                info.WorkingDirectory = workingDirectory.MakeAbsolute(_cakeEnvironment).FullPath;
+            }
+
+            // Run the process.
+            var process = _advProcessRunner.Start(toolPath, info);
+            if (process == null)
+            {
+                const string message = "{0}: Process was not started.";
+                throw new CakeException(string.Format(CultureInfo.InvariantCulture, message, toolName));
+            }
             return process;
         }
 

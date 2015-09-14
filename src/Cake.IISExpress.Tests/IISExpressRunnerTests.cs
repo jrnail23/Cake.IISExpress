@@ -4,6 +4,7 @@ using System.Linq;
 using Cake.Core;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
+using Cake.Process;
 using FluentAssertions;
 using NSubstitute;
 using Ploeh.AutoFixture.Xunit2;
@@ -68,8 +69,11 @@ namespace Cake.IISExpress.Tests
         public class IISExpressRunnerTestImpl : IISExpressRunner<IISExpressSettingsTestImpl>
         {
             public IISExpressRunnerTestImpl(IFileSystem fileSystem, ICakeEnvironment environment,
-                IProcessRunner processRunner, IGlobber globber, IRegistry registry, ICakeLog log)
-                : base(fileSystem, environment, processRunner, globber, registry, log)
+                IProcessRunner processRunner, IGlobber globber, IRegistry registry, ICakeLog log,
+                IAdvProcessRunner advProcessRunner)
+                : base(
+                    fileSystem, environment, processRunner, globber, registry, log, advProcessRunner
+                    )
             {
             }
 

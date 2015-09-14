@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Threading;
 using Cake.Core;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
 using Cake.Core.Utilities;
+using Cake.Process;
 using FluentAssertions;
 using NSubstitute;
 using Ploeh.AutoFixture.Xunit2;
@@ -19,7 +21,7 @@ namespace Cake.IISExpress.Tests
         }
 
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
-        public void ShouldNotSetAnySwitchesByDefault([Frozen] IProcessRunner runner,
+        public void ShouldNotSetAnySwitchesByDefault([Frozen] IAdvProcessRunner runner,
             ConfigBasedIISExpressRunner sut)
         {
             var settings = new ConfigBasedIISExpressSettings();
@@ -27,11 +29,12 @@ namespace Cake.IISExpress.Tests
             sut.StartServer(settings);
 
             runner.Received()
-                .Start(Arg.Any<FilePath>(), Arg.Is<ProcessSettings>(p => p.Arguments.Render() == ""));
+                .Start(Arg.Any<FilePath>(),
+                    Arg.Is<AdvProcessSettings>(p => p.Arguments.Render() == ""));
         }
 
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
-        public void ShouldSetSiteSwitch([Frozen] IProcessRunner runner,
+        public void ShouldSetSiteSwitch([Frozen] IAdvProcessRunner runner,
             ConfigBasedIISExpressRunner sut)
         {
             var settings = new ConfigBasedIISExpressSettings { SiteNameToLaunch = "My Web Site" };
@@ -40,12 +43,12 @@ namespace Cake.IISExpress.Tests
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
-                    Arg.Is<ProcessSettings>(p => p.Arguments.Render() == "/site:\"My Web Site\""));
+                    Arg.Is<AdvProcessSettings>(p => p.Arguments.Render() == "/site:\"My Web Site\""));
         }
 
-        [Theory, CustomAutoData(typeof(IISExpressRunnerCustomizations))]
-        public void ShouldSetAppPoolSwitch([Frozen] IProcessRunner runner,
-    ConfigBasedIISExpressRunner sut)
+        [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
+        public void ShouldSetAppPoolSwitch([Frozen] IAdvProcessRunner runner,
+            ConfigBasedIISExpressRunner sut)
         {
             var settings = new ConfigBasedIISExpressSettings { AppPoolToLaunch = "MyAppPool" };
 
@@ -53,11 +56,11 @@ namespace Cake.IISExpress.Tests
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
-                    Arg.Is<ProcessSettings>(p => p.Arguments.Render() == "/apppool:MyAppPool"));
+                    Arg.Is<AdvProcessSettings>(p => p.Arguments.Render() == "/apppool:MyAppPool"));
         }
 
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
-        public void ShouldSetSiteIdSwitch([Frozen] IProcessRunner runner,
+        public void ShouldSetSiteIdSwitch([Frozen] IAdvProcessRunner runner,
             ConfigBasedIISExpressRunner sut)
         {
             var settings = new ConfigBasedIISExpressSettings { SiteIdToLaunch = 53 };
@@ -66,11 +69,11 @@ namespace Cake.IISExpress.Tests
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
-                    Arg.Is<ProcessSettings>(p => p.Arguments.Render() == "/siteid:53"));
+                    Arg.Is<AdvProcessSettings>(p => p.Arguments.Render() == "/siteid:53"));
         }
 
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
-        public void ShouldThrowWhenBothSiteIdAndSiteNameAreSet([Frozen] IProcessRunner runner,
+        public void ShouldThrowWhenBothSiteIdAndSiteNameAreSet([Frozen] IAdvProcessRunner runner,
             ConfigBasedIISExpressRunner sut)
         {
             var settings = new ConfigBasedIISExpressSettings
@@ -85,7 +88,7 @@ namespace Cake.IISExpress.Tests
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
         public void ShouldSetConfigFileSwitchFromRelativeFilePath(
             [Frozen] ICakeEnvironment environment,
-            IFileSystem fileSystem, [Frozen] IProcessRunner runner,
+            IFileSystem fileSystem, [Frozen] IAdvProcessRunner runner,
             ConfigBasedIISExpressRunner sut)
         {
             environment.WorkingDirectory.Returns("c:/MyWorkingDirectory");
@@ -104,7 +107,7 @@ namespace Cake.IISExpress.Tests
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
-                    Arg.Is<ProcessSettings>(
+                    Arg.Is<AdvProcessSettings>(
                         p =>
                             p.Arguments.Render() ==
                             "/config:\"c:/MyWorkingDirectory/applicationhost.config\""));
@@ -113,7 +116,7 @@ namespace Cake.IISExpress.Tests
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
         public void ShouldSetConfigFileSwitchFromAbsoluteFilePath(
             [Frozen] ICakeEnvironment environment,
-            IFileSystem fileSystem, [Frozen] IProcessRunner runner,
+            IFileSystem fileSystem, [Frozen] IAdvProcessRunner runner,
             ConfigBasedIISExpressRunner sut)
         {
             environment.WorkingDirectory.Returns("c:/MyWorkingDirectory");
@@ -133,7 +136,7 @@ namespace Cake.IISExpress.Tests
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
-                    Arg.Is<ProcessSettings>(
+                    Arg.Is<AdvProcessSettings>(
                         p =>
                             p.Arguments.Render() ==
                             "/config:\"c:/someOtherDirectory/applicationhost.config\""));
@@ -141,7 +144,7 @@ namespace Cake.IISExpress.Tests
 
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
         public void ShouldThrowWhenConfigFileDoesNotExist([Frozen] ICakeEnvironment environment,
-            IFileSystem fileSystem, [Frozen] IProcessRunner runner,
+            IFileSystem fileSystem, [Frozen] IAdvProcessRunner runner,
             ConfigBasedIISExpressRunner sut)
         {
             environment.WorkingDirectory.Returns("c:/MyWorkingDirectory");
@@ -164,7 +167,7 @@ namespace Cake.IISExpress.Tests
         }
 
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
-        public void ShouldSetSystraySwitch([Frozen] IProcessRunner runner,
+        public void ShouldSetSystraySwitch([Frozen] IAdvProcessRunner runner,
             ConfigBasedIISExpressRunner sut)
         {
             var settings = new ConfigBasedIISExpressSettings { EnableSystemTray = false };
@@ -173,11 +176,11 @@ namespace Cake.IISExpress.Tests
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
-                    Arg.Is<ProcessSettings>(p => p.Arguments.Render() == "/systray:false"));
+                    Arg.Is<AdvProcessSettings>(p => p.Arguments.Render() == "/systray:false"));
         }
 
-        [Theory, CustomAutoData(typeof(IISExpressRunnerCustomizations))]
-        public void ShouldSetTraceSwitch([Frozen] IProcessRunner runner,
+        [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
+        public void ShouldSetTraceSwitch([Frozen] IAdvProcessRunner runner,
             ConfigBasedIISExpressRunner sut)
         {
             var settings = new ConfigBasedIISExpressSettings { TraceLevel = TraceLevel.Warning };
@@ -186,15 +189,16 @@ namespace Cake.IISExpress.Tests
 
             runner.Received()
                 .Start(Arg.Any<FilePath>(),
-                    Arg.Is<ProcessSettings>(p => p.Arguments.Render() == "/trace:warning"));
+                    Arg.Is<AdvProcessSettings>(p => p.Arguments.Render() == "/trace:warning"));
         }
 
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
-        public void ShouldThrowWhenIISExpressProcessWritesToErrorStream([Frozen(As = typeof(IProcess))] FakeProcess process,
-            [Frozen] IProcessRunner processRunner, [Frozen] IRegistry registry,
+        public void ShouldThrowWhenIISExpressProcessWritesToErrorStream(
+            [Frozen] IAdvProcess process,
+            [Frozen] IAdvProcessRunner processRunner, [Frozen] IRegistry registry,
             ConfigBasedIISExpressRunner sut)
         {
-            processRunner.Start(Arg.Any<FilePath>(), Arg.Any<ProcessSettings>()).Returns(process);
+            processRunner.Start(Arg.Any<FilePath>(), Arg.Any<AdvProcessSettings>()).Returns(process);
 
             var settings = new ConfigBasedIISExpressSettings();
 
@@ -202,15 +206,18 @@ namespace Cake.IISExpress.Tests
 
             process.Invoking(
                 p =>
-                    p.TriggerErrorOutput("some dummy error data received"))
+                    p.ErrorDataReceived +=
+                        Raise.EventWith(
+                            new ProcessOutputReceivedEventArgs("some dummy error data received")))
                 .ShouldThrow<CakeException>()
                 .WithMessage(
                     "IIS Express returned the following error message: 'some dummy error data received'");
         }
 
         [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
-        public void ShouldWaitUntilIISExpressServerIsStarted([Frozen]ICakeLog log, [Frozen(As = typeof(IProcess))] FakeProcess process,
-            [Frozen] IProcessRunner processRunner, [Frozen] IRegistry registry,
+        public void ShouldWaitUntilIISExpressServerIsStarted([Frozen] ICakeLog log,
+            [Frozen] IAdvProcess process,
+            [Frozen] IAdvProcessRunner processRunner, [Frozen] IRegistry registry,
             ConfigBasedIISExpressRunner sut)
         {
             var simulatedStandardOutput = new[]
@@ -226,11 +233,12 @@ namespace Cake.IISExpress.Tests
                 {
                     foreach (var s in simulatedStandardOutput)
                     {
-                        process.TriggerStandardOutput(s);
+                        process.OutputDataReceived += Raise.EventWith(process,
+                            new ProcessOutputReceivedEventArgs(s));
                     }
                 });
 
-            processRunner.Start(Arg.Any<FilePath>(), Arg.Any<ProcessSettings>())
+            processRunner.Start(Arg.Any<FilePath>(), Arg.Any<AdvProcessSettings>())
                 .Returns(ci => process);
 
             var settings = new ConfigBasedIISExpressSettings { WaitForStartup = 1000 };
@@ -242,10 +250,11 @@ namespace Cake.IISExpress.Tests
                     Arg.Is<string>(s => s.StartsWith("IIS Express is running")), Arg.Any<object[]>());
         }
 
-        [Theory, CustomAutoData(typeof(IISExpressRunnerCustomizations))]
-        public void ShouldTimeoutWhenIISExpressTakesLongerThanSpecifiedWaitTimeToStart([Frozen]ICakeLog log, [Frozen(As = typeof(IProcess))] FakeProcess process,
-    [Frozen] IProcessRunner processRunner, [Frozen] IRegistry registry,
-    ConfigBasedIISExpressRunner sut)
+        [Theory, CustomAutoData(typeof (IISExpressRunnerCustomizations))]
+        public void ShouldTimeoutWhenIISExpressTakesLongerThanSpecifiedWaitTimeToStart(
+            [Frozen] ICakeLog log, [Frozen] IAdvProcess process,
+            [Frozen] IAdvProcessRunner processRunner, [Frozen] IRegistry registry,
+            ConfigBasedIISExpressRunner sut)
         {
             var simulatedStandardOutput = new[]
             { "1", "2", "3", "4", "IIS Express is running.", "5" };
@@ -258,14 +267,15 @@ namespace Cake.IISExpress.Tests
                         "Waiting for IIS Express to start (timeout: {0}ms)", Arg.Any<object[]>()))
                 .Do(ci =>
                 {
-                    System.Threading.Thread.Sleep(100);
+                    Thread.Sleep(100);
                     foreach (var s in simulatedStandardOutput)
                     {
-                        process.TriggerStandardOutput(s);
+                        process.OutputDataReceived += Raise.EventWith(process,
+                            new ProcessOutputReceivedEventArgs(s));
                     }
                 });
 
-            processRunner.Start(Arg.Any<FilePath>(), Arg.Any<ProcessSettings>())
+            processRunner.Start(Arg.Any<FilePath>(), Arg.Any<AdvProcessSettings>())
                 .Returns(ci => process);
 
             var settings = new ConfigBasedIISExpressSettings { WaitForStartup = 50 };

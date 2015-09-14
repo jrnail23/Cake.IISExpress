@@ -38,6 +38,10 @@
       <HintPath>..\packages\Cake.Core.0.5.4\lib\net45\Cake.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Cake.Process, Version=0.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Cake.Process.0.0.1\lib\net45\Cake.Process.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="FluentAssertions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
       <HintPath>..\packages\FluentAssertions.4.0.0\lib\net45\FluentAssertions.dll</HintPath>
       <Private>True</Private>
@@ -83,7 +87,6 @@
     <Compile Include="CustomAutoDataAttribute.cs" />
     <Compile Include="AppPathBasedIISExpressSettingsTests.cs" />
     <Compile Include="FakeIISExpressRegistry.cs" />
-    <Compile Include="FakeProcess.cs" />
     <Compile Include="IISExpressRunnerCustomizations.cs" />
     <Compile Include="IISExpressRunnerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

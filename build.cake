@@ -107,8 +107,8 @@
                 .IsDependentOn("Build")
                 .Does(() =>
                 {
-                    XUnit("./src/**/bin/" + configuration + "/*.Tests.dll",
-                        new XUnitSettings
+                    XUnit2("./src/**/bin/" + configuration + "/*.Tests.dll",
+                        new XUnit2Settings
                         {
                             OutputDirectory = testResultsDir
                         });
