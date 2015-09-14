@@ -6,8 +6,8 @@ using Cake.Core.Diagnostics;
 using Cake.Core.IO;
 using FluentAssertions;
 using NSubstitute;
-using Ploeh.AutoFixture.Xunit;
-using Xunit.Extensions;
+using Ploeh.AutoFixture.Xunit2;
+using Xunit;
 
 namespace Cake.IISExpress.Tests
 {
