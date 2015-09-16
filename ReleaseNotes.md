@@ -1,1 +1,1 @@
-### New in 0.0.1 (Work in Progress) ###
+### New in 0.0.3 (Work in Progress) ###

@@ -1,4 +1,3 @@
-
             //////////////////////////////////////////////////////////////////////
             // ARGUMENTS
             //////////////////////////////////////////////////////////////////////
@@ -37,6 +36,7 @@
             // Define directories.
             var buildDir = Directory("./src/Cake.IISExpress/bin") + Directory(configuration);
             var buildResultDir = Directory("./build") + Directory("v" + semVersion);
+            var mergeDir = buildResultDir + Directory("merged");
             var testResultsDir = buildResultDir + Directory("test-results");
             var nugetRoot = buildResultDir + Directory("nuget");
             var binDir = buildResultDir + Directory("bin");
@@ -103,6 +103,24 @@
                             .SetNodeReuse(false));
                 });
 
+            Task("IL-Merge")
+                .IsDependentOn("Build")
+                .Does(() =>
+                {
+                    if (!DirectoryExists(mergeDir))
+                    {
+                        CreateDirectory(mergeDir);
+                    }
+
+                    ILMerge(mergeDir + File("Cake.IISExpress.dll"),
+                        buildDir + File("Cake.IISExpress.dll"),
+                        new FilePath[] {buildDir + File("Cake.Process.dll")},
+                        new ILMergeSettings
+                        {
+                            TargetPlatform = new TargetPlatform(TargetPlatformVersion.v4)
+                        });
+                });
+
             Task("Run-Unit-Tests")
                 .IsDependentOn("Build")
                 .Does(() =>
@@ -115,10 +133,10 @@
                 });
 
             Task("Copy-Files")
-                .IsDependentOn("Run-Unit-Tests")
+                .IsDependentOn("IL-Merge")
                 .Does(() =>
                 {
-                    CopyFileToDirectory(buildDir + File("Cake.IISExpress.dll"), binDir);
+                    CopyFileToDirectory(mergeDir + File("Cake.IISExpress.dll"), binDir);
                     CopyFileToDirectory(buildDir + File("Cake.IISExpress.xml"), binDir);
                     CopyFiles(new FilePath[] {"LICENSE", "README.md", "ReleaseNotes.md"}, binDir);
                 });
@@ -223,5 +241,3 @@
             //////////////////////////////////////////////////////////////////////
 
             RunTarget(target);
-
-
